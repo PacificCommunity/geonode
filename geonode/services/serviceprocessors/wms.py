@@ -20,16 +20,18 @@
 """Utilities for enabling OGC WMS remote services in geonode."""
 
 import logging
-from urlparse import urlsplit
+from urlparse import urlsplit, urljoin
 from uuid import uuid4
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext as _
 from geonode.base.models import Link
 from geonode.layers.models import Layer
 from geonode.layers.utils import create_thumbnail
-from owslib.wms import WebMapService
+from owslib.map import wms111, wms130
+from owslib.util import clean_ows_url
 
 from .. import enumerations
 from ..enumerations import CASCADED
@@ -41,6 +43,56 @@ from . import base
 logger = logging.getLogger(__name__)
 
 
+def WebMapService(url,
+                  version='1.1.1',
+                  xml=None,
+                  username=None,
+                  password=None,
+                  parse_remote_metadata=False,
+                  timeout=30,
+                  headers=None,
+                  proxy_base=None):
+    """
+    API for Web Map Service (WMS) methods and metadata.
+
+    Currently supports only version 1.1.1 of the WMS protocol.
+    """
+    '''wms factory function, returns a version specific WebMapService object
+
+    @type url: string
+    @param url: url of WFS capabilities document
+    @type xml: string
+    @param xml: elementtree object
+    @type parse_remote_metadata: boolean
+    @param parse_remote_metadata: whether to fully process MetadataURL elements
+    @param timeout: time (in seconds) after which requests should timeout
+    @return: initialized WebFeatureService_2_0_0 object
+    '''
+
+    if not proxy_base:
+        clean_url = clean_ows_url(url)
+        base_ows_url = clean_url
+    else:
+        (clean_version, proxified_url, base_ows_url) = base.get_proxified_ows_url(
+            url, version=version, proxy_base=proxy_base)
+        version = clean_version
+        clean_url = proxified_url
+
+    if version in ['1.1.1']:
+        return (base_ows_url, wms111.WebMapService_1_1_1(clean_url, version=version, xml=xml,
+                                                         parse_remote_metadata=parse_remote_metadata,
+                                                         username=username, password=password,
+                                                         timeout=timeout, headers=headers))
+    elif version in ['1.3.0']:
+        return (base_ows_url, wms130.WebMapService_1_3_0(clean_url, version=version, xml=xml,
+                                                         parse_remote_metadata=parse_remote_metadata,
+                                                         username=username, password=password,
+                                                         timeout=timeout, headers=headers))
+    raise NotImplementedError(
+        'The WMS version (%s) you requested is not implemented. Please use 1.1.1 or 1.3.0.' %
+        version)
+
+
 class WmsServiceHandler(base.ServiceHandlerBase,
                         base.CascadableServiceHandlerMixin):
     """Remote service handler for OGC WMS services"""
@@ -48,10 +100,13 @@ class WmsServiceHandler(base.ServiceHandlerBase,
     service_type = enumerations.WMS
 
     def __init__(self, url):
-        self.parsed_service = WebMapService(url)
+        self.proxy_base = urljoin(
+            settings.SITEURL, reverse('proxy'))
+        (self.url, self.parsed_service) = WebMapService(
+            url, proxy_base=self.proxy_base)
         self.indexing_method = (
             INDEXED if self._offers_geonode_projection() else CASCADED)
-        self.url = self.parsed_service.url
+        # self.url = self.parsed_service.url
         _title = self.parsed_service.identification.title
         self.name = slugify(
             _title if _title else urlsplit(self.url).netloc)[:40]
@@ -74,6 +129,7 @@ class WmsServiceHandler(base.ServiceHandlerBase,
         instance = models.Service(
             uuid=str(uuid4()),
             base_url=self.url,
+            proxy_base=self.proxy_base,
             type=self.service_type,
             method=self.indexing_method,
             owner=owner,

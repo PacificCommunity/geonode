@@ -114,7 +114,7 @@ setup(name='GeoNode',
 
             # geopython dependencies
             "pyproj>=1.9.5,<=1.9.5.1",  # python-pyproj (1.9.5.1)
-            "OWSLib>=0.10.3,<=0.15.0",  # python-owslib (0.15.0 in our ppa)
+            "OWSLib>=0.10.3,<=0.15.0",  # python-owslib (0.15.0 in our ppa) FIXME
             "pycsw>=1.10.1,<=2.0.3",  # python-pycsw (1.10.1, 2.0.0, 2.0.3 in our ppa)
             "%s" % shapely_dep,  # python-shapely (1.5.13)
 

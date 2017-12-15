@@ -861,12 +861,12 @@ def add_layers_to_map_config(request, map_obj, layer_names, add_base_layers=True
             # sent to remote services.
             ogc_server_url = urlparse.urlsplit(
                 ogc_server_settings.PUBLIC_LOCATION).netloc
-            service_url = urlparse.urlsplit(service.base_url).netloc
+            service_url = urlparse.urlsplit(service.service_url).netloc
 
-            if access_token and ogc_server_url == service_url and 'access_token' not in service.base_url:
-                url = service.base_url + '?access_token=' + access_token
+            if access_token and ogc_server_url == service_url and 'access_token' not in service.service_url:
+                url = service.service_url + '?access_token=' + access_token
             else:
-                url = service.base_url
+                url = service.service_url
             maplayer = MapLayer(map=map_obj,
                                 name=layer.alternate,
                                 ows_url=layer.ows_url,

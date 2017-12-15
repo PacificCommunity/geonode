@@ -407,11 +407,12 @@ def geoserver_proxy(request, proxy_path, downstream_path, workspace=None):
 
     path = strip_prefix(request.get_full_path(), proxy_path)
 
+    affected_layers = None
+
     access_token = None
     if 'access_token' in request.session:
         access_token = request.session['access_token']
 
-    affected_layers = None
     headers = {}
     cookies = None
     csrftoken = None

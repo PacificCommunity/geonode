@@ -19,11 +19,13 @@
 #########################################################################
 
 import logging
-from django.conf import settings
 from django.db import models
+from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from geonode.base.models import ResourceBase
 from geonode.people.enumerations import ROLE_VALUES
+from urlparse import urljoin
 
 from . import enumerations
 
@@ -60,6 +62,10 @@ class Service(ResourceBase):
     base_url = models.URLField(
         unique=True,
         db_index=True
+    )
+    proxy_base = models.URLField(
+        null=True,
+        blank=True
     )
     version = models.CharField(
         max_length=10,
@@ -157,6 +163,12 @@ class Service(ResourceBase):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def service_url(self):
+        service_url = self.base_url if not self.proxy_base else urljoin(
+            settings.SITEURL, reverse('service_proxy', args=[self.id]))
+        return service_url
 
     @property
     def ptype(self):

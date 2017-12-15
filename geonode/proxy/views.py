@@ -31,7 +31,7 @@ from django.middleware.csrf import get_token
 
 # @csrf_exempt
 @requires_csrf_token
-def proxy(request):
+def proxy(request, url=None):
     PROXY_ALLOWED_HOSTS = getattr(settings, 'PROXY_ALLOWED_HOSTS', ())
 
     host = None
@@ -42,13 +42,13 @@ def proxy(request):
         PROXY_ALLOWED_HOSTS += hostname
         host = ogc_server_settings.netloc
 
-    if 'url' not in request.GET:
+    if 'url' not in request.GET and not url:
         return HttpResponse("The proxy service requires a URL-encoded URL as a parameter.",
                             status=400,
                             content_type="text/plain"
                             )
 
-    raw_url = request.GET['url']
+    raw_url = url or request.GET['url']
     url = urlsplit(raw_url)
     locator = str(url.path)
     if url.query != "":
@@ -98,6 +98,10 @@ def proxy(request):
 
     if request.method in ("POST", "PUT") and "CONTENT_TYPE" in request.META:
         headers["Content-Type"] = request.META["CONTENT_TYPE"]
+
+    access_token = None
+    if 'access_token' in request.session:
+        access_token = request.session['access_token']    #
 
     if 'HTTP_AUTHORIZATION' in request.META:
         auth = request.META.get('HTTP_AUTHORIZATION', request.META.get('HTTP_AUTHORIZATION2'))
