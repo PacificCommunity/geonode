@@ -23,6 +23,7 @@ import logging
 from urlparse import urlsplit, urljoin
 from uuid import uuid4
 
+from decimal import Decimal
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
@@ -192,6 +193,11 @@ class WmsServiceHandler(base.ServiceHandlerBase,
         if existance_test_qs.exists():
             raise RuntimeError(
                 "Resource {!r} has already been harvested".format(resource_id))
+        resource_fields["is_approved"]  = True
+        resource_fields["is_published"] = True
+        if settings.RESOURCE_PUBLISHING or settings.ADMIN_MODERATE_UPLOADS:
+            resource_fields["is_approved"] = False
+            resource_fields["is_published"] = False
         # bear in mind that in ``geonode.layers.models`` there is a
         # ``pre_save_layer`` function handler that is connected to the
         # ``pre_save`` signal for the Layer model. This handler does a check
@@ -199,7 +205,7 @@ class WmsServiceHandler(base.ServiceHandlerBase,
         # sensible default values
         geonode_layer = Layer(
             owner=geonode_service.owner,
-            service=geonode_service,
+            remote_service=geonode_service,
             uuid=str(uuid4()),
             **resource_fields
         )
@@ -290,11 +296,20 @@ class WmsServiceHandler(base.ServiceHandlerBase,
             }
         )
 
+    def _decimal_encode(self, bbox):
+        _bbox = []
+        for o in [float(coord) for coord in bbox]:
+            if isinstance(o, Decimal):
+                o = (str(o) for o in [o])
+            _bbox.append("{0:.15f}".format(round(o, 2)))
+        return _bbox
+
     def _get_cascaded_layer_fields(self, geoserver_resource):
         name = geoserver_resource.name
         workspace = geoserver_resource.workspace.name
         store = geoserver_resource.store
-        bbox = geoserver_resource.latlon_bbox
+
+        bbox = self._decimal_encode(geoserver_resource.latlon_bbox)
         return {
             "name": name,
             "workspace": workspace,
@@ -310,7 +325,7 @@ class WmsServiceHandler(base.ServiceHandlerBase,
         }
 
     def _get_indexed_layer_fields(self, layer_meta):
-        bbox = layer_meta.boundingBoxWGS84
+        bbox = self._decimal_encode(layer_meta.boundingBoxWGS84)
         return {
             "name": layer_meta.name,
             "store": self.name,

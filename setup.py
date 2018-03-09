@@ -51,7 +51,7 @@ setup(name='GeoNode',
 
             # native dependencies
             "Pillow<=3.3.1",  # python-imaging (3.1.2) - python-pillow (3.3.1 in our ppa)
-            "lxml<=3.6.2",  # python-lxml (3.6.2 in our ppa)
+            "lxml<=3.8.0",  # python-lxml (3.6.2 in our ppa) FIXME
             "psycopg2<=2.7.3.1",  # python-psycopg2 (2.7.3.1 in our ppa)
             "Django<=1.9.13",  # python-django (1.8.18 in our ppa)
 

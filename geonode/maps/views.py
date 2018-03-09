@@ -827,9 +827,12 @@ def add_layers_to_map_config(request, map_obj, layer_names, add_base_layers=True
 
         def decimal_encode(bbox):
             import decimal
+            _bbox = []
             for o in [float(coord) for coord in bbox]:
                 if isinstance(o, decimal.Decimal):
                     o = (str(o) for o in [o])
+                _bbox.append(o)
+            return _bbox
 
         if bbox is None:
             bbox = list(layer_bbox[0:4])
