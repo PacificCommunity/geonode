@@ -107,7 +107,12 @@ DATABASE_URL = os.getenv(
 # see https://docs.djangoproject.com/en/1.8/ref/contrib/gis/db-api/#module-django.contrib.gis.db.backends for
 # detailed list of supported backends and notes.
 DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=900),
+    'OPTIONS': {
+        # ...
+        'timeout': 20,
+        # ...
+    }
 }
 
 if os.getenv('DEFAULT_BACKEND_DATASTORE'):

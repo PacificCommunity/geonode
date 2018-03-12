@@ -554,7 +554,7 @@ def file_upload(filename,
             layer = Layer.objects.get(alternate=title)
             created = False
             overwrite = True
-
+    print(" ************************************************************ ")
     # Delete the old layers if overwrite is true
     # and the layer was not just created
     # process the layer again after that by
