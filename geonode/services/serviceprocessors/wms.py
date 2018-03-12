@@ -193,7 +193,7 @@ class WmsServiceHandler(base.ServiceHandlerBase,
         if existance_test_qs.exists():
             raise RuntimeError(
                 "Resource {!r} has already been harvested".format(resource_id))
-        resource_fields["is_approved"]  = True
+        resource_fields["is_approved"] = True
         resource_fields["is_published"] = True
         if settings.RESOURCE_PUBLISHING or settings.ADMIN_MODERATE_UPLOADS:
             resource_fields["is_approved"] = False
