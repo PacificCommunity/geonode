@@ -69,7 +69,9 @@ class HelperTest(LiveServerTestCase):
 
         new_bbox = transform_layer_bbox(uploaded, 4326)
 
-        expected_bbox = [96.956, -5.518733, 97.10970532, -5.303545552]
+        expected_bbox = [
+            96.956, -5.5187329999999,
+            97.10970532, -5.3035455519999]
 
         self.assertEqual(new_bbox, expected_bbox)
 
