@@ -128,11 +128,12 @@ class TopicCategory(models.Model):
     See: http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml
     <CodeListDictionary gml:id="MD_MD_TopicCategoryCode">
     """
-    identifier = models.CharField(max_length=255, default='location')
+    identifier = models.CharField(max_length=255, default='location', editable=False)
     description = models.TextField(default='')
     gn_description = models.TextField(
         'GeoNode description', default='', null=True)
     is_choice = models.BooleanField(default=True)
+    display_on_homepage = models.BooleanField(default=True)
     fa_class = models.CharField(max_length=64, default='fa-times')
 
     def __unicode__(self):

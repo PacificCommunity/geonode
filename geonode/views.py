@@ -29,10 +29,20 @@ except ImportError:
     from django.utils import simplejson as json
 from django.db.models import Q
 from django.template.response import TemplateResponse
+from django.views.generic import TemplateView
 
 from geonode import get_version
 from geonode.base.templatetags.base_tags import facets
 from geonode.groups.models import GroupProfile
+
+
+class HomeView(TemplateView):
+    template_name = "index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        context['topics'] = geonode.db.TopicCategory.objects.filter(display_on_homepage=True)
+        return context
 
 
 class AjaxLoginForm(forms.Form):

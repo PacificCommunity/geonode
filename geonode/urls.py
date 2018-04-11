@@ -59,7 +59,7 @@ sitemaps = {
 urlpatterns = [  # '',
     # Static pages
     url(r'^$',
-        TemplateView.as_view(template_name='index.html'),
+        geonode.views.HomeView.as_view(),
         name='home'),
     url(r'^help/$',
         TemplateView.as_view(template_name='help.html'),
